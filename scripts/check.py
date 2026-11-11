@@ -4,7 +4,8 @@
 Each domain is resolved through the system resolver (or a specific DNS server with --server) and
 compared with an unfiltered reference resolver:
 
-  blocked       sinkhole answer (0.0.0.0, ::, 127.0.0.1, --block-ip) or NXDOMAIN while the
+  blocked       sinkhole answer (0.0.0.0, ::, 127.0.0.1, TEST-NET block pages such as UniFi's
+                203.0.113.250, --block-ip) or NXDOMAIN while the
                 reference resolver still resolves the domain
   not blocked   resolves to a real address -> the domain gets through your filter
   dead          does not resolve anywhere (domain no longer exists; not counted)
@@ -52,6 +53,10 @@ DNS_CLASS_IN = 1
 DNS_RCODE_NXDOMAIN = 3
 DNS_MAX_UDP_SIZE = 4096
 SINKHOLE_ADDRESSES = {"0.0.0.0", "::", "127.0.0.1", "::1"}
+# Reserved documentation ranges (RFC 5737 / 3849) never appear in real DNS answers; blockers such as
+# UniFi Ad Blocking (203.0.113.250) use them for their block page.
+SINKHOLE_NETWORKS = tuple(ipaddress.ip_network(n) for n in (
+    "192.0.2.0/24", "198.51.100.0/24", "203.0.113.0/24", "2001:db8::/32"))
 MAX_LISTED_LEAKS = 25
 DOWNLOAD_TIMEOUT_SECONDS = 120
 
@@ -178,6 +183,13 @@ def resolve_system(domain: str) -> list[str]:
 
 
 # --------------------------------------------------------------------------- checking
+def is_sinkhole(address: str, sinkholes: set[str]) -> bool:
+    if address in sinkholes:
+        return True
+    ip = ipaddress.ip_address(address)
+    return any(ip in network for network in SINKHOLE_NETWORKS)
+
+
 def classify(domain: str, args: argparse.Namespace, sinkholes: set[str]) -> dict:
     result = {"domain": domain}
     try:
@@ -186,7 +198,7 @@ def classify(domain: str, args: argparse.Namespace, sinkholes: set[str]) -> dict
     except DnsError as error:
         return result | {"status": ERROR, "detail": str(error)}
     result["answers"] = answers
-    if answers and all(a in sinkholes for a in answers):
+    if answers and all(is_sinkhole(a, sinkholes) for a in answers):
         return result | {"status": BLOCKED}
     if answers:
         return result | {"status": NOT_BLOCKED}

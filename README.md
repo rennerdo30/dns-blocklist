@@ -57,7 +57,7 @@ python3 scripts/build.py --out-dir dist
 domains through the system resolver and compares the answers with an unfiltered resolver
 (1.1.1.1 by default):
 
-- **blocked** – sinkhole answer (`0.0.0.0`, `::`, `127.0.0.1`) or NXDOMAIN although the domain exists
+- **blocked** – sinkhole answer (`0.0.0.0`, `::`, `127.0.0.1`, block pages in reserved ranges such as UniFi's `203.0.113.250`) or NXDOMAIN although the domain exists
 - **not blocked** – resolves to a real address
 - **dead** – the domain no longer exists anywhere (not counted in the block rate)
 
