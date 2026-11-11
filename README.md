@@ -19,6 +19,11 @@ of roughly 80k entries for devices with limited memory or list-size limits.
 [`stats.json`](https://raw.githubusercontent.com/rennerdo30/dns-blocklist/lists/stats.json)
 shows the entry counts and the status of every source.
 
+**UniFi firewall:** when you use a list in a firewall rule, set the action to **Reject**, not
+**Block**. Block silently drops packets, so apps wait for every blocked request to time out (the
+Steam store, for example, stops loading). Reject refuses the connection immediately and pages load
+normally.
+
 The `lists` branch is force-pushed as a single commit on each update, so the repository does not
 grow over time.
 
@@ -78,6 +83,8 @@ Zusammengeführte DNS-Blockliste aus den bekannten Pi-hole-, AdGuard- und uBlock
 GitHub Actions alle 6 Stunden neu erstellt wird. Die oben genannten Raw-URLs aus dem Branch
 `lists` können direkt als dynamische Liste im Router oder DNS-Server eingetragen werden.
 Für Geräte mit begrenztem Speicher gibt es `-lite`-Varianten (ca. 80.000 Einträge).
+In der UniFi-Firewall als Aktion **Reject** statt **Block** verwenden, sonst warten Apps (z. B. der
+Steam-Store) auf Timeouts.
 Mit `python3 scripts/check.py` lässt sich prüfen, ob dein DNS die Liste tatsächlich blockiert.
 
 ## License
