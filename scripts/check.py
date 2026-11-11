@@ -24,9 +24,7 @@ import argparse
 import concurrent.futures
 import ipaddress
 import json
-import locale
 import logging
-import os
 import random
 import secrets
 import socket
@@ -63,45 +61,23 @@ DOWNLOAD_TIMEOUT_SECONDS = 120
 BLOCKED, NOT_BLOCKED, DEAD, ERROR = "blocked", "not_blocked", "dead", "error"
 
 MESSAGES = {
-    "en": {
-        "loading": "Loading list from {source}",
-        "loaded": "{total} domains in list, checking {count}",
-        "resolver": "Resolver under test: {resolver} | reference: {reference}",
-        "dns_broken": "Your DNS does not resolve {domain}; is the resolver reachable? Aborting.",
-        "summary": "Result",
-        "blocked": "Blocked",
-        "not_blocked": "Not blocked",
-        "dead": "Dead (resolves nowhere)",
-        "error": "Errors / timeouts",
-        "rate": "Block rate (of live domains)",
-        "leaks": "Domains that are NOT blocked (first {n}):",
-        "hint_ip": "Hint: many answers point to {ip}. If that is your router's block page, rerun with --block-ip {ip}",
-        "fail": "Block rate {rate:.1f}% is below --fail-under {limit}%",
-        "report": "JSON report written to {path}",
-    },
-    "de": {
-        "loading": "Lade Liste von {source}",
-        "loaded": "{total} Domains in der Liste, prüfe {count}",
-        "resolver": "Geprüfter Resolver: {resolver} | Referenz: {reference}",
-        "dns_broken": "Dein DNS löst {domain} nicht auf; ist der Resolver erreichbar? Abbruch.",
-        "summary": "Ergebnis",
-        "blocked": "Blockiert",
-        "not_blocked": "Nicht blockiert",
-        "dead": "Tot (nirgends auflösbar)",
-        "error": "Fehler / Timeouts",
-        "rate": "Blockrate (aktive Domains)",
-        "leaks": "Domains, die NICHT blockiert werden (erste {n}):",
-        "hint_ip": "Hinweis: Viele Antworten zeigen auf {ip}. Falls das die Sperrseite deines Routers ist, erneut mit --block-ip {ip} ausführen",
-        "fail": "Blockrate {rate:.1f}% liegt unter --fail-under {limit}%",
-        "report": "JSON-Bericht gespeichert unter {path}",
-    },
+    "loading": "Loading list from {source}",
+    "loaded": "{total} domains in list, checking {count}",
+    "resolver": "Resolver under test: {resolver} | reference: {reference}",
+    "dns_broken": "Your DNS does not resolve {domain}; is the resolver reachable? Aborting.",
+    "summary": "Result",
+    "blocked": "Blocked",
+    "not_blocked": "Not blocked",
+    "dead": "Dead (resolves nowhere)",
+    "error": "Errors / timeouts",
+    "rate": "Block rate (of live domains)",
+    "leaks": "Domains that are NOT blocked (first {n}):",
+    "hint_ip": "Hint: many answers point to {ip}. If that is your router's block page, rerun with --block-ip {ip}",
+    "fail": "Block rate {rate:.1f}% is below --fail-under {limit}%",
+    "report": "JSON report written to {path}",
 }
 CONTROL_DOMAINS = ("google.com", "cloudflare.com")
 
-
-def detect_language() -> str:
-    lang = os.environ.get("LC_ALL") or os.environ.get("LANG") or (locale.getlocale()[0] or "")
-    return "de" if lang.lower().startswith("de") else "en"
 
 
 # --------------------------------------------------------------------------- minimal DNS client
@@ -128,7 +104,7 @@ def dns_query(server: str, domain: str, qtype: int, timeout: float) -> tuple[int
     family = socket.AF_INET6 if ":" in server else socket.AF_INET
     query_id = secrets.randbits(16)
     packet = struct.pack(">HHHHHH", query_id, 0x0100, 1, 0, 0, 0) + _encode_name(domain) + struct.pack(
-        ">HH", qtype, DNS_CLASS_IN)
+    ">HH", qtype, DNS_CLASS_IN)
     last_error: Exception | None = None
     for _ in range(DNS_RETRIES):
         with socket.socket(family, socket.SOCK_DGRAM) as sock:
@@ -233,11 +209,10 @@ def main() -> int:
     parser.add_argument("--timeout", type=float, default=DEFAULT_TIMEOUT_SECONDS, help="seconds per DNS query")
     parser.add_argument("--fail-under", type=float, help="exit 1 if the block rate (%%) is below this value")
     parser.add_argument("--json", type=Path, help="write a detailed JSON report to this file")
-    parser.add_argument("--lang", choices=sorted(MESSAGES), default=detect_language())
     parser.add_argument("--log-level", default="INFO", choices=["DEBUG", "INFO", "WARNING", "ERROR"])
     args = parser.parse_args()
     logging.basicConfig(level=args.log_level, format="%(levelname)-7s %(message)s")
-    msg = MESSAGES[args.lang]
+    msg = MESSAGES
     sinkholes = SINKHOLE_ADDRESSES | {str(ipaddress.ip_address(ip)) for ip in args.block_ip}
 
     LOG.info(msg["loading"].format(source=args.list))

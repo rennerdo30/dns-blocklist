@@ -74,18 +74,7 @@ python3 scripts/check.py --block-ip 192.168.1.1           # router answers with 
 python3 scripts/check.py --fail-under 95 --json report.json
 ```
 
-The block rate should be close to 100% once the list is active in your router. Output language
-follows your locale (`--lang en|de`).
-
-## Deutsch
-
-Zusammengeführte DNS-Blockliste aus den bekannten Pi-hole-, AdGuard- und uBlock-Listen, die per
-GitHub Actions alle 6 Stunden neu erstellt wird. Die oben genannten Raw-URLs aus dem Branch
-`lists` können direkt als dynamische Liste im Router oder DNS-Server eingetragen werden.
-Für Geräte mit begrenztem Speicher gibt es `-lite`-Varianten (ca. 80.000 Einträge).
-In der UniFi-Firewall als Aktion **Reject** statt **Block** verwenden, sonst warten Apps (z. B. der
-Steam-Store) auf Timeouts.
-Mit `python3 scripts/check.py` lässt sich prüfen, ob dein DNS die Liste tatsächlich blockiert.
+The block rate should be close to 100% once the list is active in your router.
 
 ## License
 
