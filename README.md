@@ -51,12 +51,34 @@ Build locally (Python 3.10+, no dependencies):
 python3 scripts/build.py --out-dir dist
 ```
 
+## Check your DNS
+
+`scripts/check.py` tests whether your DNS actually blocks the list. It resolves a random sample of
+domains through the system resolver and compares the answers with an unfiltered resolver
+(1.1.1.1 by default):
+
+- **blocked** – sinkhole answer (`0.0.0.0`, `::`, `127.0.0.1`) or NXDOMAIN although the domain exists
+- **not blocked** – resolves to a real address
+- **dead** – the domain no longer exists anywhere (not counted in the block rate)
+
+```sh
+python3 scripts/check.py                                  # 1000 random domains via system DNS
+python3 scripts/check.py --server 192.168.1.1             # ask the router directly
+python3 scripts/check.py --list domains-lite.txt --sample 0   # every domain of a local file
+python3 scripts/check.py --block-ip 192.168.1.1           # router answers with a block-page IP
+python3 scripts/check.py --fail-under 95 --json report.json
+```
+
+The block rate should be close to 100% once the list is active in your router. Output language
+follows your locale (`--lang en|de`).
+
 ## Deutsch
 
 Zusammengeführte DNS-Blockliste aus den bekannten Pi-hole-, AdGuard- und uBlock-Listen, die per
 GitHub Actions alle 6 Stunden neu erstellt wird. Die oben genannten Raw-URLs aus dem Branch
 `lists` können direkt als dynamische Liste im Router oder DNS-Server eingetragen werden.
 Für Geräte mit begrenztem Speicher gibt es `-lite`-Varianten (ca. 80.000 Einträge).
+Mit `python3 scripts/check.py` lässt sich prüfen, ob dein DNS die Liste tatsächlich blockiert.
 
 ## License
 
