@@ -1,0 +1,50 @@
+name: Update blocklists
+
+on:
+  schedule:
+    - cron: "17 */6 * * *"
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "config/**"
+      - "scripts/**"
+      - ".github/workflows/update.yml"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: update-blocklists
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.13"
+
+      - name: Fetch previously published stats
+        run: |
+          curl -fsSL "https://raw.githubusercontent.com/${GITHUB_REPOSITORY}/lists/stats.json" \
+            -o previous-stats.json || echo "No previous build found"
+
+      - name: Build lists
+        run: python3 scripts/build.py --out-dir dist --previous-stats previous-stats.json
+
+      - name: Publish to the lists branch
+        working-directory: dist
+        run: |
+          git init -q -b lists
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -q -m "Update lists $(date -u +%Y-%m-%dT%H:%MZ)"
+          git push -f "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" lists
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

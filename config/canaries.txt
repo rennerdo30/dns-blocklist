@@ -1,0 +1,14 @@
+# Sanity check: the build fails (and nothing is published) if any of these ends up in the list.
+# These are essential domains that must never be blocked.
+google.com
+www.google.com
+youtube.com
+www.youtube.com
+github.com
+raw.githubusercontent.com
+apple.com
+microsoft.com
+cloudflare.com
+amazon.com
+wikipedia.org
+ui.com

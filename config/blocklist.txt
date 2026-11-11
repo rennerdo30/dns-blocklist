@@ -1,0 +1,2 @@
+# Extra domains to always block, in addition to the upstream lists.
+# One domain per line.
