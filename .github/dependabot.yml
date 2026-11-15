@@ -1,25 +1,22 @@
 # Dependabot configuration.
 #
-# Monthly, with every update for an ecosystem grouped into a single pull
-# request, to keep the review queue small for a low-traffic repository. A
-# cooldown skips releases younger than a week. Security updates are grouped
-# per ecosystem and are not delayed.
+# Low-traffic repository: every version update across all ecosystems lands in
+# ONE pull request per month (a multi-ecosystem group). A cooldown skips
+# releases younger than a week. Security updates are not delayed and arrive as
+# soon as an advisory matches.
 version: 2
+
+multi-ecosystem-groups:
+  monthly-dependencies:
+    schedule:
+      interval: "monthly"
+    commit-message:
+      prefix: "deps"
 
 updates:
   - package-ecosystem: "github-actions"
     directory: "/"
-    schedule:
-      interval: "monthly"
+    patterns: ["*"]
+    multi-ecosystem-group: "monthly-dependencies"
     cooldown:
       default-days: 7
-    open-pull-requests-limit: 2
-    commit-message:
-      prefix: "deps(actions):"
-    groups:
-      actions-all:
-        applies-to: version-updates
-        patterns: ["*"]
-      actions-security:
-        applies-to: security-updates
-        patterns: ["*"]
